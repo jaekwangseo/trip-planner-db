@@ -17,17 +17,31 @@ $(function () {
     var $restaurantSelect = $optionsPanel.find('#restaurant-choices');
     var $activitySelect = $optionsPanel.find('#activity-choices');
 
-    // make all the option tags (second arg of `forEach` is a `this` binding)
-    hotels.forEach(makeOption, $hotelSelect);
-    restaurants.forEach(makeOption, $restaurantSelect);
-    activities.forEach(makeOption, $activitySelect);
 
-    // Once you've made AJAX calls to retrieve this information,
-    // call attractions.loadEnhancedAttractions in the fashion
-    // exampled below in order to integrate it.
-    attractionsModule.loadEnhancedAttractions('hotels', hotels);
-    attractionsModule.loadEnhancedAttractions('restaurants', restaurants);
-    attractionsModule.loadEnhancedAttractions('activities', activities);
+    let hotelsPromise = $.get('/api/hotels');
+    let restaurantsPromise = $.get('/api/restaurants');
+    let activitiesPromise = $.get('/api/activities');
+
+    Promise.all([hotelsPromise, restaurantsPromise, activitiesPromise])
+    .then(function ([dbHotels, dbRestaurants, dbActivities]) {
+        console.log(dbHotels)
+        hotels = dbHotels;
+        restaurants = dbRestaurants;
+        activities = dbActivities;
+
+        // make all the option tags (second arg of `forEach` is a `this` binding)
+        hotels.forEach(makeOption, $hotelSelect);
+        restaurants.forEach(makeOption, $restaurantSelect);
+        activities.forEach(makeOption, $activitySelect);
+
+        // Once you've made AJAX calls to retrieve this information,
+        // call attractions.loadEnhancedAttractions in the fashion
+        // exampled below in order to integrate it.
+        attractionsModule.loadEnhancedAttractions('hotels', hotels);
+        attractionsModule.loadEnhancedAttractions('restaurants', restaurants);
+        attractionsModule.loadEnhancedAttractions('activities', activities);
+    })
+
 
     function makeOption(databaseAttraction) {
         var $option = $('<option></option>') // makes a new option tag
