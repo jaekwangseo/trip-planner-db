@@ -75,7 +75,49 @@ var tripModule = (function () {
   var publicAPI = {
 
     load: function () {
-      $(addDay);
+
+      console.log('loading stuff!!!')
+
+      let results = APICALL.loadDays();
+      results.then(function(results) {
+
+        let days = results.days;
+        let attractionsForDayOne = results.attractionsForDayOne;
+
+        days.forEach(function() {
+          $(addDay);
+        })
+
+        let hotel = attractionsForDayOne[0];
+        let restaurants = attractionsForDayOne[1];
+        let activities = attractionsForDayOne[2];
+
+        hotel = attractionsModule.getEnhanced(hotel);
+        restaurants = restaurants.map(function(rest) {
+          return attractionsModule.getEnhanced(rest)
+        });
+        activities = activities.map(function(activity) {
+          return attractionsModule.getEnhanced(activity)
+        })
+
+        let dayOne = days.filter(function(day) {
+          return day.number === 1;
+        })
+        let dayOneInstance = dayModule.create(dayOne);
+
+        dayOneInstance.addAttraction(hotel);
+        restaurants.forEach(function(rest) {
+          dayOneInstance.addAttraction(rest);
+        })
+        activities.forEach(function(activity) {
+          dayOneInstance.addAttraction(activity);
+        })
+      })
+
+
+      // tripModule.switchTo()
+      
+
     },
 
     switchTo: switchTo,

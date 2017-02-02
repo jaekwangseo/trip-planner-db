@@ -7,11 +7,53 @@ var Activity = require('../../models/activity');
 var Day = require('../../models/day');
 
 
+router.get('/days', function(req, res, next) {
+
+  console.log('/days');
+  //Get all days
+  // Using days.number call, createDay
+  Day.findAll()
+  .then(function(days) {
+
+    console.log(days)
+
+    getAllAttractions(1)
+    .then(function(attractionsForDayOne) {
+      res.json({ days, attractionsForDayOne});
+    })
+
+    // let dayPromises = days.map(function(day) {
+    //
+    //   return getAllAttractions(day.number);
+    // });
+    //
+    //
+    // Promise.all(dayPromises)
+    // .then(function(results) {
+    //   res.json(results);
+    // });
+
+  })
+      .catch(next)
+
+});
+
 router.get('/days/:num', function (req, res, next) { // /api/
 
-  Day.findOne({
+  getAllAttractions(req.params.num)
+  .then(function (results) {
+    console.log(results);
+    res.json(results);
+  })
+  .catch(next);
+
+});
+
+function getAllAttractions(dayNumber) {
+
+  return Day.findOne({
     where: {
-      number: req.params.num
+      number: dayNumber
     }
   })
     .then(function (day) {
@@ -51,21 +93,54 @@ router.get('/days/:num', function (req, res, next) { // /api/
       //Returning the promises for all three searches
       return Promise.all([hotelPromise, restaurantPromise, activityPromise])
     })
-    .then(function (results) {
-      console.log(results);
-      res.json(results);
+    // .then(function (results) {
+    //   console.log(results);
+    //   res.json(results);
+    // })
+
+}
+
+
+router.delete('/days/:num', function(req, res, next){
+  // Delete restaurnt associations
+  // Delete activity asscoiates
+  // Delete day row
+  Day.findOne({
+    where: {
+      number: req.params.num
+    }
+  })
+  .then(function(day) {
+    db.models.day_restaurant.destroy({
+      where: {
+        dayId: day.id
+      }
     })
     .catch(next);
 
+    db.models.day_activity.destroy({
+      where: {
+        dayId: day.id
+      }
+    })
+    .catch(next);
 
-});
+    Day.destroy({
+      where: {
+        id: day.id
+      }
+    })
+    .catch(next);
 
-router.delete('/days/:num', function(req, res, next){
-
-
+  })
+  .then(function() {
+    res.json({message: 'Day deleted successfully'});
+  })
+  .catch(next);
 })
 
 
+// Create a new day
 router.post('/days/:num', function (req, res, next) { // /api/
 
   //Get hotel
@@ -82,6 +157,7 @@ router.post('/days/:num', function (req, res, next) { // /api/
       res.json({ newRow, success: true });
     })
     .catch(next);
+
 });
 
 router.post('/days/:num/hotels/:hotelId', function (req, res, next) { // /api/
@@ -123,16 +199,21 @@ router.delete('/days/:num/hotels/:hotelId', function (req, res, next) { // /api/
   //Get hotel
   //using day number, get hotel id
   //look up hotel table
-  Day.destroy({
-    where: {
-      number: req.params.num,
-      hotelId: req.params.hotelId
+  Day.update(
+    {
+      hotelId: null
+    },
+    {
+      where: {
+        number: req.params.num,
+        hotelId: req.params.hotelId
+      },
+      returning: true
     }
-  })
-    .then(function (deletedRow) {
-      console.log("Destroyed row", deletedRow);
-      console.log("Hotel removed from day.");
-      res.json({ deletedRow, success: true });
+  )
+    .then(function (updatedRow) {
+      console.log("Hotel ID set to null", updatedRow);
+      res.json({ updatedRow, success: true });
     })
     .catch(next);
 });

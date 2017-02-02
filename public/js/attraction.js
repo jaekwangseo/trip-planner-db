@@ -19,7 +19,7 @@ var attractionModule = (function () {
   // jQuery selections
 
   var $itinerary, $hotel, $restaurants, $activities;
-  $(function(){
+  $(function () {
     $itinerary = $('#itinerary');
     $hotel = $itinerary.find('ul[data-type="hotel"]');
     $restaurants = $itinerary.find('ul[data-type="restaurants"]');
@@ -28,7 +28,7 @@ var attractionModule = (function () {
 
   // Attraction class setup
 
-  function Attraction (data) {
+  function Attraction(data) {
     utilsModule.merge(data, this); // copy all key-val pairs into this new obj
     this.buildItineraryItem().buildMarker();
   }
@@ -77,9 +77,8 @@ var attractionModule = (function () {
     create: function (databaseAttraction) {
       return new Attraction(databaseAttraction);
     }
-
   };
 
   return publicAPI;
 
-}());
+} ());

@@ -5,14 +5,27 @@ var restaurants = [];// = {{ templateRestaurants | dump | safe }};
 var activities = [];// = {{ templateActivities | dump | safe }};
 
 
+var APICALL = (function () {
 
-$.get('/api/restaurants')
-.then(function (dbrestaurants) {
-  restaurants = dbrestaurants;
-})
+  // application state
 
-$.get('/api/activities')
-.then(function (dbactivities) {
-  activities = dbactivities;
-})
 
+  // globally accessible module methods
+
+  var publicAPI = {
+
+    loadDays: function() {
+      return $.get('/api/days')
+          .then(function (results) {
+            console.log('ajax called', results);
+            return results;
+          })
+          .catch(console.error.bind(console));
+
+    }
+
+  };
+
+  return publicAPI;
+
+}());
